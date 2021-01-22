@@ -1,52 +1,91 @@
-from discord.channel import CategoryChannel, TextChannel, VoiceChannel
-import settings
+import sys
 import discord
+import settings
+from random import randint
 from discord.ext import commands
+from discord.channel import CategoryChannel, TextChannel, VoiceChannel
 
-class RKClient(discord.Client):
-    async def on_message(self, msg):
-        if msg.content.startswith('$ '):
-            args = msg.content[2::].split(' ')
-            if len(args) < 1: return
-            if args[0] == 'update':
-                for role in msg.guild.roles[::-1]:
-                    if role.name not in '@everyoneAdminBotRollenkanalSchauspielerin':
-                        try:
-                            if discord.utils.get(msg.guild.categories, name=role.name) == None:
-                                category = await msg.guild.create_category(role.name)
-                                await category.set_permissions(msg.guild.default_role, overwrite=discord.PermissionOverwrite(read_messages=False))
-                                await category.set_permissions(role, overwrite=discord.PermissionOverwrite(read_messages=True))
-                                await msg.guild.create_voice_channel(role.name, category=category)
-                                await msg.guild.create_text_channel(role.name, category=category)
-                        except Exception as e:
-                            print(e)
-                await msg.channel.send('Finished updating')
-            
-            elif args[0] == 'cclean':
-                text_names = []
-                voice_names = []
-                channels = 0
-                for channel in msg.guild.channels:
-                    if not isinstance(channel, CategoryChannel) and channel.category_id == None:
-                        channels += 1
-                        await channel.delete()
-                    elif isinstance(channel, VoiceChannel):
-                        if channel.name in voice_names:
-                            channels += 1
-                            await channel.delete()
-                        else: voice_names.append(channel.name)
-                    elif isinstance(channel, TextChannel):
-                        if channel.name in text_names:
-                            channels += 1
-                            await channel.delete()
-                        else: text_names.append(channel.name)
-                    elif isinstance(channel, CategoryChannel) and len(channel.channels) < 1:
-                        channels += 1
-                        await channel.delete()
+EXCLUDE_ROLES = ['@everyone', 'Admin', 'Bot', 'Rollenkanal', 'Schauspielerin', 'neue Rolle', 'new role']
+
+client = commands.Bot('$ ')
+
+async def send(context, message):
+    await context.message.channel.send(f'```\n{message}\n```')
+
+@client.event
+async def on_ready():
+    print('Rollenkanal online')
+
+@client.command()
+async def update(context):
+    tasks = 0
+    remove = '--remove' in context.message.content.split(' ')
+    for role in context.guild.roles[::-1]:
+        if role.name not in EXCLUDE_ROLES:
+            if discord.utils.get(context.guild.categories, name=role.name) == None:
+                tasks += 1
+                category = await context.guild.create_category(role.name)
+                await category.set_permissions(context.guild.default_role, overwrite=discord.PermissionOverwrite(read_messages=False))
+                await category.set_permissions(role, overwrite=discord.PermissionOverwrite(read_messages=True))
+                await context.guild.create_voice_channel(role.name, category=category)
+                await context.guild.create_text_channel(role.name, category=category)
+            elif remove:
+                pass
+    if tasks < 1: await send(context, 'Already up to date')
+    else: await send(context, 'Finished updating')
+
+
+@client.command()
+async def cclean(context):
+    channels = 0
+    text_names = []
+    voice_names = []
+    for channel in context.guild.channels:
+        if not isinstance(channel, CategoryChannel) and channel.category_id == None:
+            channels += 1
+            await channel.delete()
+        elif isinstance(channel, VoiceChannel):
+            if channel.name in voice_names:
+                channels += 1
+                await channel.delete()
+            else: voice_names.append(channel.name)
+        elif isinstance(channel, TextChannel):
+            if channel.name in text_names:
+                channels += 1
+                await channel.delete()
+            else: text_names.append(channel.name)
+        elif isinstance(channel, CategoryChannel) and len(channel.channels) < 1:
+            channels += 1
+            await channel.delete()
                 
-                if channels < 1: await msg.channel.send('Nothing to clean up')
-                else: await msg.channel.send(f'Deleted {channels} channels')
+    if channels < 1: await send(context, 'Nothing to clean up')
+    else: await send(context, f'Deleted {channels} channels')
 
+@client.command()
+async def clear(context, amount=None):
+    try: amount = int(amount) + 1
+    except: pass
+    await context.channel.purge(limit=amount)
+
+@client.command()
+async def random(context, min=None, max=None):
+    try:
+        if min == None: await send(context, f'Es wurde eine {randint(0, sys.maxsize)} gewürfelt!')
+        elif max == None: await send(context, f'Es wurde eine {randint(0, int(min))} gewürfelt!')
+        else: await send(context, f'Es wurde eine {randint(int(min), int(max))} gewürfelt!')
+    except: await send(context, 'Die Eingabeparameter müssen Teil der Menge ℤ sein!')
+
+
+@client.remove_command('help')
+@client.command()
+async def help(context):
+    await send(context, 'Available commands:\n'+
+        '\tupdate: creates new channels depending on existing roles\n'+
+        '\tcclean: deletes empty categories and top-level channels')
 
 if __name__ == '__main__':
-    RKClient().run(settings.TOKEN)
+    try:
+        client.run(settings.TOKEN)
+    except Exception as e:
+        print(e)
+        client.run(settings.TOKEN)
