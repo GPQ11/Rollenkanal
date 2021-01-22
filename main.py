@@ -9,6 +9,7 @@ EXCLUDE_ROLES = ['@everyone', 'Admin', 'Bot', 'Rollenkanal', 'Schauspielerin', '
 
 client = commands.Bot('$ ')
 
+
 async def send(context, message):
     await context.message.channel.send(f'```\n{message}\n```')
 
@@ -18,6 +19,7 @@ async def on_ready():
 
 @client.command()
 async def update(context):
+    print(f'{context.message.author} running update...')
     tasks = 0
     remove = '--remove' in context.message.content.split(' ')
     for role in context.guild.roles[::-1]:
@@ -34,9 +36,21 @@ async def update(context):
     if tasks < 1: await send(context, 'Already up to date')
     else: await send(context, 'Finished updating')
 
+@client.command()
+async def rclean(context):
+    print(f'{context.message.author} running rclean...')
+    roles = 0
+    for role in context.message.guild.roles:
+        if role.name == 'neue Rolle' or role.name == 'new role':
+            roles += 1
+            await role.delete()
+    if roles < 1: await send(context, 'Nothing to clean up')
+    else: await send(context, f'Deleted {roles} roles')
+
 
 @client.command()
 async def cclean(context):
+    print(f'{context.message.author} running cclean...')
     channels = 0
     text_names = []
     voice_names = []
@@ -63,12 +77,14 @@ async def cclean(context):
 
 @client.command()
 async def clear(context, amount=None):
+    print(f'{context.message.author} running clear...')
     try: amount = int(amount) + 1
     except: pass
     await context.channel.purge(limit=amount)
 
 @client.command()
 async def random(context, min=None, max=None):
+    print(f'{context.message.author} running random...')
     try:
         if min == None: await send(context, f'Es wurde eine {randint(0, sys.maxsize)} gewürfelt!')
         elif max == None: await send(context, f'Es wurde eine {randint(0, int(min))} gewürfelt!')
@@ -79,6 +95,7 @@ async def random(context, min=None, max=None):
 @client.remove_command('help')
 @client.command()
 async def help(context):
+    print(f'{context.message.author} running help...')
     await send(context, 'Available commands:\n'+
         '\tupdate: creates new channels depending on existing roles\n'+
         '\tcclean: deletes empty categories and top-level channels')
