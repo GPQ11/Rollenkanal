@@ -1,4 +1,5 @@
 import sys
+import time
 import discord
 import settings
 import discord.utils
@@ -185,3 +186,4 @@ if __name__ == '__main__':
             client.run(settings.TOKEN)
         except Exception as e:
             print(e)
+            time.sleep(10)
