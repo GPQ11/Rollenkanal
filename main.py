@@ -12,7 +12,6 @@ EXCLUDE_ROLES = ['@everyone', 'Admin', 'Bot', 'Rollenkanal', 'Schauspielerin', '
 
 intents = discord.Intents.default()
 intents.members = True
-intents.guilds = True
 client = commands.Bot('$ ', intents=intents)
 
 def get_gpq11_guild():
