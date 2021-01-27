@@ -18,6 +18,7 @@ async def on_ready():
     print('Rollenkanal online')
 
 @client.command()
+@commands.has_permissions(administrator=True)
 async def ccrole(context):
     print(f'{context.message.author} running update...')
     if isinstance(context.channel, discord.channel.DMChannel):
@@ -38,6 +39,7 @@ async def ccrole(context):
     else: await send(context, 'Finished updating')
 
 @client.command()
+@commands.has_permissions(administrator=True)
 async def rclean(context):
     print(f'{context.message.author} running rclean...')
     if isinstance(context.channel, discord.channel.DMChannel):
@@ -52,6 +54,7 @@ async def rclean(context):
     else: await send(context, f'Deleted {roles} roles')
 
 @client.command()
+@commands.has_permissions(administrator=True)
 async def cclean(context):
     print(f'{context.message.author} running cclean...')
     if isinstance(context.channel, discord.channel.DMChannel):
@@ -82,6 +85,7 @@ async def cclean(context):
     else: await send(context, f'Deleted {channels} channels')
 
 @client.command()
+@commands.has_permissions(administrator=True)
 async def clear(context, amount=None):
     print(f'{context.message.author} running clear...')
     if isinstance(context.channel, discord.channel.DMChannel):
