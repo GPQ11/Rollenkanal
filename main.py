@@ -1,14 +1,32 @@
 import sys
 import discord
 import settings
+import discord.utils
 from random import randint
 from discord.ext import commands
 from discord.channel import CategoryChannel, TextChannel, VoiceChannel
 
+SERVER_NAME = 'Q11'
 EXCLUDE_ROLES = ['@everyone', 'Admin', 'Bot', 'Rollenkanal', 'Schauspielerin', 'Dummy', 'neue Rolle', 'new role']
 
-client = commands.Bot('$ ')
+intents = discord.Intents.default()
+intents.members = True
+intents.guilds = True
+client = commands.Bot('$ ', intents=intents)
 
+def get_gpq11_guild():
+    for guild in client.guilds:
+        if guild.name.strip() == SERVER_NAME:
+            return guild
+
+def get_role_table():
+    role_table = {}
+    index = 0
+    for role in get_gpq11_guild().roles[::-1]:
+        if role.name not in (EXCLUDE_ROLES + ['Kurssprecher']):
+            role_table[index] = role.name
+            index += 1
+    return role_table
 
 async def send(context, message):
     await context.message.channel.send(f'```\n{message}\n```')
@@ -16,11 +34,14 @@ async def send(context, message):
 @client.event
 async def on_ready():
     print('Rollenkanal online')
+    if get_gpq11_guild() is None:
+        client.logout()
+        
 
 @client.command()
 @commands.has_permissions(administrator=True)
 async def ccrole(context):
-    print(f'{context.message.author} running update...')
+    print(f'{context.message.author} running ccrole... ({context.message.content})')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -41,7 +62,7 @@ async def ccrole(context):
 @client.command()
 @commands.has_permissions(administrator=True)
 async def rclean(context):
-    print(f'{context.message.author} running rclean...')
+    print(f'{context.message.author} running rclean... ({context.message.content})')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -56,7 +77,7 @@ async def rclean(context):
 @client.command()
 @commands.has_permissions(administrator=True)
 async def cclean(context):
-    print(f'{context.message.author} running cclean...')
+    print(f'{context.message.author} running cclean... ({context.message.content})')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -87,7 +108,7 @@ async def cclean(context):
 @client.command()
 @commands.has_permissions(administrator=True)
 async def clear(context, amount=None):
-    print(f'{context.message.author} running clear...')
+    print(f'{context.message.author} running clear... ({context.message.content})')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -95,29 +116,72 @@ async def clear(context, amount=None):
     except: pass
     await context.channel.purge(limit=amount)
 
+
+@client.command()
+async def getrole(context, roleid=None):
+    if not isinstance(context.channel, discord.channel.DMChannel): return
+    print(f'{context.message.author} running getrole... ({context.message.content})')
+
+    gpq11_guild = get_gpq11_guild()
+    member = gpq11_guild.get_member_named(context.message.author.name)
+    if member is None:
+        await send(context, 'Das darfst du nicht!')
+        return
+
+    role_table = get_role_table()
+    if roleid is None:
+        message = ''
+        for key in role_table:
+            message += f'{key}: {role_table[key]}\n'
+        await send(context, message + '---------------\n$ getrole <KEY>')
+        return
+    try:
+        roleid = int(roleid)
+        if roleid < 0 or roleid > list(role_table.keys())[-1]: raise(Exception())
+    except: 
+        await send(context, f'Die Eingabeparameter müsen Teil des Intervalls [0;{list(role_table.keys())[-1]}] ∈ ℕ₀ sein!')
+        return
+
+    for role in member.roles:
+        if role_table[roleid] != role.name and role_table[roleid].split(' ')[0] in role.name:
+            await send(context, f'Du hast bereits eine Rolle dieser Kategorie! ({role_table[roleid]})')
+            return
+        elif role_table[roleid] == role.name:
+            await send(context, f'Du hast die Rolle \'{role_table[roleid]}\' bereits!')
+            return
+    
+    await member.add_roles(discord.utils.get(gpq11_guild.roles, name=role_table[roleid]))
+    await send(context, f'\'{role_table[roleid]}\' als Rolle hinzugefügt!')
+
+
+    
+
+
+
 @client.command()
 async def random(context, min=None, max=None):
-    print(f'{context.message.author} running random...')
+    print(f'{context.message.author} running random... ({context.message.content})')
     try:
         if min == None: await send(context, f'Es wurde eine {randint(1, sys.maxsize)} gewürfelt!')
         elif max == None: await send(context, f'Es wurde eine {randint(1, int(min))} gewürfelt!')
         else: await send(context, f'Es wurde eine {randint(int(min), int(max))} gewürfelt!')
     except: await send(context, 'Die Eingabeparameter müssen Teil der Menge ℕ₀ sein!')
 
+
+
 @client.remove_command('help')
 @client.command()
 async def help(context):
-    print(f'{context.message.author} running help...')
+    print(f'{context.message.author} running help... ({context.message.content})')
     await send(context, 'Available commands:\n'+
-        '\nccrole: creates new channels depending on existing roles\n'+
+        '\tccrole: creates new channels depending on existing roles\n'+
         '\tcclean: deletes empty categories and top-level channels\n'+
         '\trclean: deletes any unconfigured roles\n'+
-        '\trandom: generates a random number (usually very big)\n'+
-        '\trandom:')
+        '\trandom: generates a random number (usually very big)')
 
 if __name__ == '__main__':
-    try:
-        client.run(settings.TOKEN)
-    except Exception as e:
-        print(e)
-        client.run(settings.TOKEN)
+    while True:
+        try:
+            client.run(settings.TOKEN)
+        except Exception as e:
+            print(e)
