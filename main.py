@@ -1,5 +1,6 @@
 import sys
 import time
+import asyncio
 import discord
 import settings
 import discord.utils
@@ -185,4 +186,5 @@ if __name__ == '__main__':
             client.run(settings.TOKEN)
         except Exception as e:
             print(e)
+            asyncio.sleep(10)
             time.sleep(10)
