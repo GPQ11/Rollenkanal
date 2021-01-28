@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
+'''This module is used for a Discord bot for the GPQ11 Discord server.'''
+
 import sys
 import time
-import asyncio
 from random import randint
 
 import discord
@@ -231,5 +232,4 @@ if __name__ == '__main__':
             client.run(settings.TOKEN)
         except Exception as exception:
             print(exception)
-            asyncio.sleep(10)
             time.sleep(10)
