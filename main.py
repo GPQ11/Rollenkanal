@@ -211,7 +211,8 @@ async def random(context, minimum=None, maximum=None):
         else:
             await send(context, f'Es wurde eine {randint(int(minimum), int(maximum))} gewürfelt!')
     except ValueError:
-        await send(context, 'Die Eingabeparameter müssen Teil der Menge ℤ sein!')
+        await send(context, 'Die Eingabeparameter müssen Teil der Menge ℕ₀ sein!')
+
 
 
 """
@@ -226,6 +227,8 @@ async def help(context):
         '\trclean: deletes any unconfigured roles\n'+
         '\trandom: generates a random number (usually very big)')
 """
+
+
 if __name__ == '__main__':
     while True:
         try:
