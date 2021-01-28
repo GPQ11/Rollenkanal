@@ -27,7 +27,7 @@ EXCLUDE_ROLES = [
 
 intents = discord.Intents.default()
 intents.members = True
-client = commands.Bot('$ ', intents=intents)
+client = commands.Bot('$', intents=intents)
 
 
 def get_gpq11_guild():
