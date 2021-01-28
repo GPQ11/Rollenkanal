@@ -140,14 +140,14 @@ async def cclean(context):
 
 @client.command()
 @commands.has_permissions(administrator=True)
-async def clear(context, amount=None):
+async def clear(context, anzahl=None):
     '''Löscht eine (un-)bestimmte Anzahl von Nachrichten in einem Channel'''
     print(f'{context.message.author} running clear... ({context.message.content})')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
     try:
-        amount = int(amount) + 1
+        amount = int(anzahl) + 1
     except ValueError:
         pass
 
@@ -207,9 +207,9 @@ async def random(context, minimum=None, maximum=None):
         if minimum is None:
             await send(context, f'Es wurde eine {randint(1, sys.maxsize)} gewürfelt!')
         elif maximum is None:
-            await send(context, f'Es wurde eine {randint(1, int(min))} gewürfelt!')
+            await send(context, f'Es wurde eine {randint(1, int(minimum))} gewürfelt!')
         else:
-            await send(context, f'Es wurde eine {randint(int(min), int(max))} gewürfelt!')
+            await send(context, f'Es wurde eine {randint(int(minimum), int(maximum))} gewürfelt!')
     except ValueError:
         await send(context, 'Die Eingabeparameter müssen Teil der Menge ℤ sein!')
 
