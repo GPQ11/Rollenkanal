@@ -172,15 +172,15 @@ async def getrole(context, roleid=None):
     if roleid is None:
         message = ''
         for key in role_table:
-            message += f'{key}: {role_table[key]}\n'
-        await send(context, message + '---------------\n$ getrole <KEY>')
+            message += f'{key}:\t{role_table[key]}\n'
+        await send(context, message + '---------------\n$getrole <KEY>\n$unrole <KEY>')
         return
     try:
         roleid = int(roleid)
         if roleid < 0 or roleid > list(role_table.keys())[-1]:
             raise(ValueError())
     except ValueError:
-        await send(context, f'Die Eingabeparameter müssen Teil des Intervalls [0;{list(role_table.keys())[-1]}] ∈ ℕ₀ sein!')
+        await send(context, f'Der Eingabeparameter muss Teil des Intervalls [0;{list(role_table.keys())[-1]}] ∈ ℕ₀ sein!')
         return
 
     for role in member.roles:
@@ -195,8 +195,38 @@ async def getrole(context, roleid=None):
     await send(context, f'\'{role_table[roleid]}\' als Rolle hinzugefügt!')
 
 
-    
 
+@client.command()
+async def unrole(context, roleid=None):
+    '''Verleiht Mitgliedern die Möglichkeit sich selbst bestimmte Rollen zu wegzunehmen'''
+    gpq11_guild = get_gpq11_guild()
+    member = gpq11_guild.get_member_named(context.message.author.name)
+    if member is None:
+        await send(context, 'Das darfst du nicht!')
+        return
+
+    role_table = get_role_table()
+    if roleid is None:
+        message = ''
+        for key in role_table:
+            message += f'{key}:\t{role_table[key]}\n'
+        await send(context, message + '---------------\n$getrole <KEY>\n$unrole <KEY>')
+        return
+
+    try:
+        roleid = int(roleid)
+        if roleid < 0 or roleid > list(role_table.keys())[-1]:
+            raise(ValueError())
+    except ValueError:
+        await send(context, f'Der Eingabeparameter muss Teil des Intervalls [0;{list(role_table.keys())[-1]}] ∈ ℕ₀ sein!')
+        return
+
+    for role in member.roles:
+        if role_table[roleid] == role.name:
+            member.remove_roles(discord.utils.get(gpq11_guild.roles, name=role_table[roleid]))
+            await send(context, f'\'{role_table[roleid]}\' als Rolle entfernt!')
+        else:
+            await send(context, f'Du hast die Rolle \'{role_table[roleid]}\' nicht!')
 
 
 @client.command()
@@ -214,19 +244,6 @@ async def random(context, minimum=None, maximum=None):
         await send(context, 'Die Eingabeparameter müssen Teil der Menge ℕ₀ sein!')
 
 
-
-"""
-@client.remove_command('help')
-@client.command()
-async def help(context):
-    '''returns a dict of int-string pairs mathcing the roles on a guild named "Q11"'''
-    print(f'{context.message.author} running help... ({context.message.content})')
-    await send(context, 'Available commands:\n'+
-        '\tccrole: creates new channels depending on existing roles\n'+
-        '\tcclean: deletes empty categories and top-level channels\n'+
-        '\trclean: deletes any unconfigured roles\n'+
-        '\trandom: generates a random number (usually very big)')
-"""
 
 
 if __name__ == '__main__':
