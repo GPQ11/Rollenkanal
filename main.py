@@ -223,10 +223,11 @@ async def unrole(context, roleid=None):
 
     for role in member.roles:
         if role_table[roleid] == role.name:
-            member.remove_roles(discord.utils.get(gpq11_guild.roles, name=role_table[roleid]))
+            await member.remove_roles(discord.utils.get(gpq11_guild.roles, name=role_table[roleid]))
             await send(context, f'\'{role_table[roleid]}\' als Rolle entfernt!')
-        else:
-            await send(context, f'Du hast die Rolle \'{role_table[roleid]}\' nicht!')
+            return
+
+    await send(context, f'Du hast die Rolle \'{role_table[roleid]}\' nicht!')
 
 
 @client.command()
