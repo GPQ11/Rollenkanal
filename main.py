@@ -198,7 +198,7 @@ async def getrole(context, roleid=None):
 
 @client.command()
 async def unrole(context, roleid=None):
-    '''Verleiht Mitgliedern die Möglichkeit sich selbst bestimmte Rollen zu wegzunehmen'''
+    '''Verleiht Mitgliedern die Möglichkeit sich selbst bestimmte Rollen wegzunehmen'''
     gpq11_guild = get_gpq11_guild()
     member = gpq11_guild.get_member_named(context.message.author.name)
     if member is None:
