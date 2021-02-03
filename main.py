@@ -5,6 +5,7 @@
 import sys
 import time
 from random import randint
+from datetime import datetime
 
 import discord
 import discord.utils
@@ -12,6 +13,7 @@ from discord.ext import commands
 from discord.channel import CategoryChannel, TextChannel, VoiceChannel
 
 import settings
+
 
 SERVER_NAME = 'Q11'
 EXCLUDE_ROLES = [
@@ -29,6 +31,12 @@ intents = discord.Intents.default()
 intents.members = True
 client = commands.Bot('$', intents=intents)
 
+
+def log(message):
+    log_message = f'[{datetime.now().time()}] {message}'
+    print(log_message)
+    with open(str(datetime.now().date()) + '.log', 'a') as f:
+        f.write(log_message + '\n')
 
 def get_gpq11_guild():
     '''returns a guild object if the bot is member of a guild named "Q11"; returns None if not'''
@@ -50,12 +58,13 @@ def get_role_table():
 
 async def send(context, message):
     '''sends a message in the channel of the context object'''
+    log(f'sending \'{message}\' to \'{context.message.author}\'')
     await context.message.channel.send(f'```\n{message}\n```')
 
 @client.event
 async def on_ready():
     '''executed on bot login'''
-    print('Rollenkanal online')
+    log('Rollenkanal online')
     if get_gpq11_guild() is None:
         client.logout()
 
@@ -64,7 +73,7 @@ async def on_ready():
 @commands.has_permissions(administrator=True)
 async def ccrole(context):
     '''Erstellt Kanäle abhängig von existierenden Rollen'''
-    print(f'{context.message.author} running ccrole... ({context.message.content})')
+    log(f'\'{context.message.author}\' running ccrole... (\'{context.message.content}\')')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -88,7 +97,7 @@ async def ccrole(context):
 @commands.has_permissions(administrator=True)
 async def rclean(context):
     '''Löscht unkonfigurierte Rollen'''
-    print(f'{context.message.author} running rclean... ({context.message.content})')
+    log(f'\'{context.message.author}\' running rclean... (\'{context.message.content}\')')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -108,7 +117,7 @@ async def rclean(context):
 @commands.has_permissions(administrator=True)
 async def cclean(context):
     '''Löscht leere Kategorien und Kanäle ohne Kategorie'''
-    print(f'{context.message.author} running cclean... ({context.message.content})')
+    log(f'\'{context.message.author}\' running cclean... (\'{context.message.content}\')')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -142,7 +151,7 @@ async def cclean(context):
 @commands.has_permissions(administrator=True)
 async def clear(context, anzahl=None):
     '''Löscht eine (un-)bestimmte Anzahl von Nachrichten in einem Channel'''
-    print(f'{context.message.author} running clear... ({context.message.content})')
+    log(f'\'{context.message.author}\' running clear... (\'{context.message.content}\')')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -151,7 +160,7 @@ async def clear(context, anzahl=None):
     except ValueError:
         pass
 
-    await context.channel.purge(limit=amount)
+    await context.channel.purge(limit=anzahl)
 
 
 @client.command()
@@ -160,7 +169,7 @@ async def getrole(context, roleid=None):
     if not isinstance(context.channel, discord.channel.DMChannel):
         return
 
-    print(f'{context.message.author} running getrole... ({context.message.content})')
+    log(f'\'{context.message.author}\' running getrole... (\'{context.message.content}\')')
 
     gpq11_guild = get_gpq11_guild()
     member = gpq11_guild.get_member_named(context.message.author.name)
@@ -199,6 +208,11 @@ async def getrole(context, roleid=None):
 @client.command()
 async def unrole(context, roleid=None):
     '''Verleiht Mitgliedern die Möglichkeit sich selbst bestimmte Rollen wegzunehmen'''
+    if not isinstance(context.channel, discord.channel.DMChannel):
+        return
+
+    log(f'\'{context.message.author}\' running unrole... (\'{context.message.content}\')')
+
     gpq11_guild = get_gpq11_guild()
     member = gpq11_guild.get_member_named(context.message.author.name)
     if member is None:
@@ -231,16 +245,24 @@ async def unrole(context, roleid=None):
 
 
 @client.command()
-async def random(context, minimum=None, maximum=None):
+async def random(context, minimum=None, maximum=None, anzahl=1):
     '''Erstellt Pseudozufallszahlen'''
-    print(f'{context.message.author} running random... ({context.message.content})')
+    log(f'\'{context.message.author}\' running random... (\'{context.message.content}\')')
+        
     try:
-        if minimum is None:
-            await send(context, f'Es wurde eine {randint(1, sys.maxsize)} gewürfelt!')
-        elif maximum is None:
-            await send(context, f'Es wurde eine {randint(1, int(minimum))} gewürfelt!')
-        else:
-            await send(context, f'Es wurde eine {randint(int(minimum), int(maximum))} gewürfelt!')
+        anzahl = int(anzahl)
+        for i in range(anzahl):
+            if minimum is None:
+                await send(context, f'Es wurde eine {randint(1, sys.maxsize)} gewürfelt!')
+            elif maximum is None:
+                await send(context, f'Es wurde eine {randint(1, int(minimum))} gewürfelt!')
+            else:
+                minimum = int(minimum)
+                maximum = int(maximum)
+                if maximum < minimum:
+                    await send(context, f'Es wurde eine {randint(maximum, minimum)} gewürfelt!')
+                else:
+                    await send(context, f'Es wurde eine {randint(minimum, maximum)} gewürfelt!')
     except ValueError:
         await send(context, 'Die Eingabeparameter müssen Teil der Menge ℕ₀ sein!')
 
