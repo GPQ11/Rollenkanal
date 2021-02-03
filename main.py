@@ -251,6 +251,11 @@ async def random(context, minimum=None, maximum=None, anzahl=1):
         
     try:
         anzahl = int(anzahl)
+
+        if anzahl > 10:
+            await send(context, 'Die Anzahl darf 10 nicht überschreiten!')
+            return
+
         for i in range(anzahl):
             if minimum is None:
                 await send(context, f'Es wurde eine {randint(1, sys.maxsize)} gewürfelt!')
