@@ -33,7 +33,7 @@ client = commands.Bot('$', intents=intents)
 
 
 def log(message):
-    log_message = f'[{datetime.now().time()}] {message}'
+    log_message = f'[{datetime.now().time()}] {message}'.replace('\n', '\\n')
     print(log_message)
     with open(str(datetime.now().date()) + '.log', 'a') as f:
         f.write(log_message + '\n')
@@ -58,7 +58,7 @@ def get_role_table():
 
 async def send(context, message):
     '''sends a message in the channel of the context object'''
-    log(f'sending \'{message}\' to \'{context.message.author}\'')
+    log(f'sending \"{message}\" to \"{context.message.author}\"')
     await context.message.channel.send(f'```\n{message}\n```')
 
 @client.event
@@ -73,7 +73,7 @@ async def on_ready():
 @commands.has_permissions(administrator=True)
 async def ccrole(context):
     '''Erstellt Kanäle abhängig von existierenden Rollen'''
-    log(f'\'{context.message.author}\' running ccrole... (\'{context.message.content}\')')
+    log(f'\"{context.message.author}\" running ccrole... (\"{context.message.content}\")')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -97,7 +97,7 @@ async def ccrole(context):
 @commands.has_permissions(administrator=True)
 async def rclean(context):
     '''Löscht unkonfigurierte Rollen'''
-    log(f'\'{context.message.author}\' running rclean... (\'{context.message.content}\')')
+    log(f'\"{context.message.author}\" running rclean... (\"{context.message.content}\")')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -117,7 +117,7 @@ async def rclean(context):
 @commands.has_permissions(administrator=True)
 async def cclean(context):
     '''Löscht leere Kategorien und Kanäle ohne Kategorie'''
-    log(f'\'{context.message.author}\' running cclean... (\'{context.message.content}\')')
+    log(f'\"{context.message.author}\" running cclean... (\"{context.message.content}\")')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
@@ -151,14 +151,13 @@ async def cclean(context):
 @commands.has_permissions(administrator=True)
 async def clear(context, anzahl=None):
     '''Löscht eine (un-)bestimmte Anzahl von Nachrichten in einem Channel'''
-    log(f'\'{context.message.author}\' running clear... (\'{context.message.content}\')')
+    log(f'\"{context.message.author}\" running clear... (\"{context.message.content}\")')
     if isinstance(context.channel, discord.channel.DMChannel):
         await send(context, 'Das geht leider nicht in privaten Konversationen!')
         return
-    try:
-        amount = int(anzahl) + 1
-    except ValueError:
-        pass
+    
+    try: anzahl = int(anzahl) + 1
+    except: pass
 
     await context.channel.purge(limit=anzahl)
 
@@ -169,7 +168,7 @@ async def getrole(context, roleid=None):
     if not isinstance(context.channel, discord.channel.DMChannel):
         return
 
-    log(f'\'{context.message.author}\' running getrole... (\'{context.message.content}\')')
+    log(f'\"{context.message.author}\" running getrole... (\"{context.message.content}\")')
 
     gpq11_guild = get_gpq11_guild()
     member = gpq11_guild.get_member_named(context.message.author.name)
@@ -211,7 +210,7 @@ async def unrole(context, roleid=None):
     if not isinstance(context.channel, discord.channel.DMChannel):
         return
 
-    log(f'\'{context.message.author}\' running unrole... (\'{context.message.content}\')')
+    log(f'\"{context.message.author}\" running unrole... (\"{context.message.content}\")')
 
     gpq11_guild = get_gpq11_guild()
     member = gpq11_guild.get_member_named(context.message.author.name)
@@ -247,7 +246,7 @@ async def unrole(context, roleid=None):
 @client.command()
 async def random(context, minimum=None, maximum=None, anzahl=1):
     '''Erstellt Pseudozufallszahlen'''
-    log(f'\'{context.message.author}\' running random... (\'{context.message.content}\')')
+    log(f'\"{context.message.author}\" running random... (\"{context.message.content}\")')
         
     try:
         anzahl = int(anzahl)
@@ -273,6 +272,9 @@ if __name__ == '__main__':
     while True:
         try:
             client.run(settings.TOKEN)
+        except KeyboardInterrupt:
+            print('keyboard interrupt')
+            exit(0)
         except Exception as exception:
             print(exception)
             time.sleep(10)
