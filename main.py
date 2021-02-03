@@ -2,6 +2,7 @@
 
 '''This module is used for a Discord bot for the GPQ11 Discord server.'''
 
+import os
 import sys
 import time
 from random import randint
@@ -269,12 +270,13 @@ async def random(context, minimum=None, maximum=None, anzahl=1):
 
 
 if __name__ == '__main__':
+    try:
+        os.makedirs('logs')
+        log('created \"logs\" directory')
+    except: pass
     while True:
         try:
             client.run(settings.TOKEN)
-        except KeyboardInterrupt:
-            print('keyboard interrupt')
-            exit(0)
         except Exception as exception:
-            print(exception)
+            log(str(exception))
             time.sleep(10)
