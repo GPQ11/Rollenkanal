@@ -35,7 +35,7 @@ client = commands.Bot('$', intents=intents)
 def log(message):
     log_message = f'[{datetime.now().time()}] {message}'.replace('\n', '\\n')
     print(log_message)
-    with open(str(datetime.now().date()) + '.log', 'a') as f:
+    with open('logs/' + str(datetime.now().date()) + '.log', 'a') as f:
         f.write(log_message + '\n')
 
 def get_gpq11_guild():
