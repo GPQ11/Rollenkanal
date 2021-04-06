@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 '''This module is used for a Discord bot for the GPQ11 Discord server.'''
 
